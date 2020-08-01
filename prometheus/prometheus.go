@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/prometheus/client_golang/prometheus"
 	prometheusclient "github.com/prometheus/client_golang/prometheus"
 )
 
@@ -33,51 +34,57 @@ var _ interface {
 	graphql.FieldInterceptor
 } = Tracer{}
 
-func Register() {
-	RegisterOn(prometheusclient.DefaultRegisterer)
+func Register(name string) {
+	RegisterOn(prometheusclient.DefaultRegisterer, name)
 }
 
-func RegisterOn(registerer prometheusclient.Registerer) {
+func RegisterOn(registerer prometheusclient.Registerer, name string) {
 	requestStartedCounter = prometheusclient.NewCounter(
 		prometheusclient.CounterOpts{
-			Name: "graphql_request_started_total",
-			Help: "Total number of requests started on the graphql server.",
+			Name:        "graphql_request_started_total",
+			Help:        "Total number of requests started on the graphql server.",
+			ConstLabels: prometheus.Labels{"service": name},
 		},
 	)
 
 	requestCompletedCounter = prometheusclient.NewCounter(
 		prometheusclient.CounterOpts{
-			Name: "graphql_request_completed_total",
-			Help: "Total number of requests completed on the graphql server.",
+			Name:        "graphql_request_completed_total",
+			Help:        "Total number of requests completed on the graphql server.",
+			ConstLabels: prometheus.Labels{"service": name},
 		},
 	)
 
 	resolverStartedCounter = prometheusclient.NewCounterVec(
 		prometheusclient.CounterOpts{
-			Name: "graphql_resolver_started_total",
-			Help: "Total number of resolver started on the graphql server.",
+			Name:        "graphql_resolver_started_total",
+			Help:        "Total number of resolver started on the graphql server.",
+			ConstLabels: prometheus.Labels{"service": name},
 		},
 		[]string{"object", "field"},
 	)
 
 	resolverCompletedCounter = prometheusclient.NewCounterVec(
 		prometheusclient.CounterOpts{
-			Name: "graphql_resolver_completed_total",
-			Help: "Total number of resolver completed on the graphql server.",
+			Name:        "graphql_resolver_completed_total",
+			Help:        "Total number of resolver completed on the graphql server.",
+			ConstLabels: prometheus.Labels{"service": name},
 		},
 		[]string{"object", "field"},
 	)
 
 	timeToResolveField = prometheusclient.NewHistogramVec(prometheusclient.HistogramOpts{
-		Name:    "graphql_resolver_duration_ms",
-		Help:    "The time taken to resolve a field by graphql server.",
-		Buckets: prometheusclient.ExponentialBuckets(1, 2, 11),
+		Name:        "graphql_resolver_duration_ms",
+		Help:        "The time taken to resolve a field by graphql server.",
+		ConstLabels: prometheus.Labels{"service": name},
+		Buckets:     prometheusclient.ExponentialBuckets(1, 2, 11),
 	}, []string{"exitStatus", "object", "field"})
 
 	timeToHandleRequest = prometheusclient.NewHistogramVec(prometheusclient.HistogramOpts{
-		Name:    "graphql_request_duration_ms",
-		Help:    "The time taken to handle a request by graphql server.",
-		Buckets: prometheusclient.ExponentialBuckets(1, 2, 11),
+		Name:        "graphql_request_duration_ms",
+		Help:        "The time taken to handle a request by graphql server.",
+		ConstLabels: prometheus.Labels{"service": name},
+		Buckets:     prometheusclient.ExponentialBuckets(1, 2, 11),
 	}, []string{"exitStatus"})
 
 	registerer.MustRegister(

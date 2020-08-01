@@ -16,7 +16,7 @@ import (
 
 func TestPrometheus_ResolverMiddleware_RequestMiddleware(t *testing.T) {
 
-	prometheus.Register()
+	prometheus.Register("builtin_test")
 
 	mux := http.NewServeMux()
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
