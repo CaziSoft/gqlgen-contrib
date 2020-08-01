@@ -1,4 +1,4 @@
-module github.com/99designs/gqlgen-contrib
+module github.com/cazisoft/gqlgen-contrib
 
 go 1.14
 
