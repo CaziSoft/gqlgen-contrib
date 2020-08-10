@@ -1,4 +1,4 @@
-module github.com/cazisoft/gqlgen-contrib
+module github.com/jamscloud/gqlgen-contrib
 
 go 1.14
 
